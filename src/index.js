@@ -5,6 +5,7 @@ import Life from './pages/demo/Life';
 import * as serviceWorker from './serviceWorker';
 
 //同步测试
+//修改测试
 ReactDOM.render(<Life />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
