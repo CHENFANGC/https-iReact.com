@@ -22,9 +22,6 @@ export default class Life extends React.Component{
         })
     }
     render(){
-        let style = {
-            padding: 50
-        }
         return (
             <div className="content">
                 <p>React生命周期介绍</p>
