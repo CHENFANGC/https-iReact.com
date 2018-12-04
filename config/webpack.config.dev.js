@@ -68,11 +68,35 @@ const getStyleLoaders = (cssOptions, preProcessor) => {
         ],
       },
     },
+    {
+      loader: 'less-loader',
+      options: {
+        javascriptEnabled: true,
+      },
+    },
   ];
   if (preProcessor) {
-    loaders.push(require.resolve(preProcessor));
+    let loader = require.resolve(preProcessor)
+    if (preProcessor === "less-loader") {
+      loader = {
+        loader,
+        options: {
+          modifyVars: {
+            '@primary-color': '#007ACC',
+            'link-color': '#1DA57A',
+            'border-radius-base': '2px',
+          },
+          javascriptEnabled: true,
+        }
+      }
+    }
+    loaders.push(loader);
   }
   return loaders;
+  // if (preProcessor) {
+  //   loaders.push(require.resolve(preProcessor));
+  // }
+  // return loaders;
 };
 
 // This is the development configuration.
@@ -188,7 +212,7 @@ module.exports = {
             options: {
               formatter: require.resolve('react-dev-utils/eslintFormatter'),
               eslintPath: require.resolve('eslint'),
-              
+
             },
             loader: require.resolve('eslint-loader'),
           },
@@ -233,7 +257,10 @@ module.exports = {
                     },
                   },
                 ],
+                // 无需在每个文件引入antd,统一加
+                //['import',[{libraryName:'antd',style:true}]],
               ],
+              
               // This is a feature of `babel-loader` for webpack (not Babel itself).
               // It enables caching results in ./node_modules/.cache/babel-loader/
               // directory for faster rebuilds.
@@ -258,6 +285,10 @@ module.exports = {
                   { helpers: true },
                 ],
               ],
+              // 无需在每个文件引入antd,统一加
+              // plugins:[
+              //   ['import',[{libraryName:'antd',style:true}]],
+              // ],
               cacheDirectory: true,
               // Don't waste time on Gzipping the cache
               cacheCompression: false,
@@ -268,29 +299,6 @@ module.exports = {
               // being evaluated would be much more helpful.
               sourceMaps: false,
             },
-          },
-          // "postcss" loader applies autoprefixer to our CSS.
-          // "css" loader resolves paths in CSS and adds assets as dependencies.
-          // "style" loader turns CSS into JS modules that inject <style> tags.
-          // In production, we use a plugin to extract that CSS to a file, but
-          // in development "style" loader enables hot editing of CSS.
-          // By default we support CSS Modules with the extension .module.css
-          {
-            test: lessRegex,
-            exclude: lessModuleRegex,
-            use: getStyleLoaders({
-              importLoaders: 1,
-            }),
-          },
-          // Adds support for CSS Modules (https://github.com/css-modules/css-modules)
-          // using the extension .module.css
-          {
-            test: lessModuleRegex,
-            use: getStyleLoaders({
-              importLoaders: 1,
-              modules: true,
-              getLocalIdent: getCSSModuleLocalIdent,
-            }),
           },
           // "postcss" loader applies autoprefixer to our CSS.
           // "css" loader resolves paths in CSS and adds assets as dependencies.
@@ -314,6 +322,30 @@ module.exports = {
               modules: true,
               getLocalIdent: getCSSModuleLocalIdent,
             }),
+          },
+          // "postcss" loader applies autoprefixer to our CSS.
+          // "css" loader resolves paths in CSS and adds assets as dependencies.
+          // "style" loader turns CSS into JS modules that inject <style> tags.
+          // In production, we use a plugin to extract that CSS to a file, but
+          // in development "style" loader enables hot editing of CSS.
+          // By default we support CSS Modules with the extension .module.css
+          {
+            test: lessRegex,
+            exclude: lessModuleRegex,
+            use: getStyleLoaders({ importLoaders: 2 }, 'less-loader'),
+          },
+          // Adds support for CSS Modules (https://github.com/css-modules/css-modules)
+          // using the extension .module.css
+          {
+            test: lessModuleRegex,
+            use: getStyleLoaders(
+              {
+                importLoaders: 2,
+                modules: true,
+                getLocalIdent: getCSSModuleLocalIdent,
+              },
+              'less-loader'
+            ),
           },
           // Opt-in support for SASS (using .scss or .sass extensions).
           // Chains the sass-loader with the css-loader and the style-loader

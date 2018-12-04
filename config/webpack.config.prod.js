@@ -93,16 +93,39 @@ const getStyleLoaders = (cssOptions, preProcessor) => {
         sourceMap: shouldUseSourceMap,
       },
     },
+    {
+      loader: 'less-loader',
+      options: {
+        javascriptEnabled: true,
+      },
+    },
   ];
   if (preProcessor) {
-    loaders.push({
+    let loader = {
       loader: require.resolve(preProcessor),
       options: {
         sourceMap: shouldUseSourceMap,
       },
-    });
+    }
+    if (preProcessor === "less-loader") {
+      loader.options.modifyVars = {
+        'primary-color': '#000000',
+        'link-color': '#1DA57A',
+        'border-radius-base': '2px',
+      }
+      loader.options.javascriptEnabled = true
+    }
+    loaders.push(loader);
   }
-  return loaders;
+  // if (preProcessor) {
+  //   loaders.push({
+  //     loader: require.resolve(preProcessor),
+  //     options: {
+  //       sourceMap: shouldUseSourceMap,
+  //     },
+  //   });
+  // }
+  // return loaders;
 };
 
 // This is the production configuration.
@@ -330,6 +353,10 @@ module.exports = {
                   { helpers: true },
                 ],
               ],
+              // 无需在每个文件引入antd,统一加
+              // plugins:[
+              //   ['import',[{libraryName:'antd',style:true}]],
+              // ],
               cacheDirectory: true,
               // Save disk space when time isn't as important
               cacheCompression: true,
@@ -341,29 +368,7 @@ module.exports = {
               sourceMaps: false,
             },
           },
-          // "postcss" loader applies autoprefixer to our CSS.
-          // "css" loader resolves paths in CSS and adds assets as dependencies.
-          // "style" loader turns CSS into JS modules that inject <style> tags.
-          // In production, we use a plugin to extract that CSS to a file, but
-          // in development "style" loader enables hot editing of CSS.
-          // By default we support CSS Modules with the extension .module.css
-          {
-            test: lessRegex,
-            exclude: lessModuleRegex,
-            use: getStyleLoaders({
-              importLoaders: 1,
-            }),
-          },
-          // Adds support for CSS Modules (https://github.com/css-modules/css-modules)
-          // using the extension .module.css
-          {
-            test: lessModuleRegex,
-            use: getStyleLoaders({
-              importLoaders: 1,
-              modules: true,
-              getLocalIdent: getCSSModuleLocalIdent,
-            }),
-          },
+          
           // "postcss" loader applies autoprefixer to our CSS.
           // "css" loader resolves paths in CSS and adds assets as dependencies.
           // `MiniCSSExtractPlugin` extracts styles into CSS
@@ -382,6 +387,7 @@ module.exports = {
             // See https://github.com/webpack/webpack/issues/6571
             sideEffects: true,
           },
+          
           // Adds support for CSS Modules (https://github.com/css-modules/css-modules)
           // using the extension .module.css
           {
@@ -392,6 +398,30 @@ module.exports = {
               modules: true,
               getLocalIdent: getCSSModuleLocalIdent,
             }),
+          },
+          // "postcss" loader applies autoprefixer to our CSS.
+          // "css" loader resolves paths in CSS and adds assets as dependencies.
+          // "style" loader turns CSS into JS modules that inject <style> tags.
+          // In production, we use a plugin to extract that CSS to a file, but
+          // in development "style" loader enables hot editing of CSS.
+          // By default we support CSS Modules with the extension .module.css
+          {
+            test: lessRegex,
+            exclude: lessModuleRegex,
+            use: getStyleLoaders({ importLoaders: 2 }, 'less-loader'),
+          },
+          // Adds support for CSS Modules (https://github.com/css-modules/css-modules)
+          // using the extension .module.css
+          {
+            test: lessModuleRegex,
+            use: getStyleLoaders(
+              {
+                importLoaders: 2,
+                modules: true,
+                getLocalIdent: getCSSModuleLocalIdent,
+              },
+              'less-loader'
+            ),
           },
           // Opt-in support for SASS. The logic here is somewhat similar
           // as in the CSS routine, except that "sass-loader" runs first
